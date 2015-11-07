@@ -17,6 +17,7 @@
 #include "nrf.h"
 #include "nrf_delay.h"
 #include "nrf_gpio.h"
+ #include "SEGGER_RTT.h"
 
 /* Max cycles approximately to wait on RXDREADY and TXDREADY event,
  * This is optimized way instead of using timers, this is not power aware. */
@@ -27,7 +28,7 @@ static bool twi_master_write(uint8_t * data, uint8_t data_length, bool issue_sto
     uint32_t timeout = MAX_TIMEOUT_LOOPS; /* max loops to wait for EVENTS_TXDSENT event*/
 
     if (data_length == 0)
-    {
+    {//SEGGER_RTT_printf(0, "StupidW: %d\r\n", data_length);
         /* Return false for requesting data of size 0 */
         return false;
     }
@@ -44,7 +45,7 @@ static bool twi_master_write(uint8_t * data, uint8_t data_length, bool issue_sto
         }
 
         if (timeout == 0 || NRF_TWI1->EVENTS_ERROR != 0)
-        {
+        {   //SEGGER_RTT_printf(0, "AnomalyW: %d\r\n", NRF_TWI1->EVENTS_ERROR);
             // Recover the peripheral as indicated by PAN 56: "TWI: TWI module lock-up." found at
             // Product Anomaly Notification document found at 
             // https://www.nordicsemi.com/eng/Products/Bluetooth-R-low-energy/nRF51822/#Downloads
@@ -90,7 +91,7 @@ static bool twi_master_read(uint8_t * data, uint8_t data_length, bool issue_stop
     uint32_t timeout = MAX_TIMEOUT_LOOPS; /* max loops to wait for RXDREADY event*/
 
     if (data_length == 0)
-    {
+    {   //SEGGER_RTT_printf(0, "Stupid: %d\r\n", data_length);
         /* Return false for requesting data of size 0 */
         return false;
     }
@@ -117,7 +118,7 @@ static bool twi_master_read(uint8_t * data, uint8_t data_length, bool issue_stop
         NRF_TWI1->EVENTS_RXDREADY = 0;
 
         if (timeout == 0 || NRF_TWI1->EVENTS_ERROR != 0)
-        {
+        {   //SEGGER_RTT_printf(0, "Anomaly: %d\r\n", NRF_TWI1->EVENTS_ERROR);
             // Recover the peripheral as indicated by PAN 56: "TWI: TWI module lock-up." found at
             // Product Anomaly Notification document found at
             // https://www.nordicsemi.com/eng/Products/Bluetooth-R-low-energy/nRF51822/#Downloads
@@ -214,7 +215,6 @@ static bool twi_master_clear_bus(void)
     {
         uint_fast8_t i;
         bus_clear = false;
-
         // Clock max 18 pulses worst case scenario(9 for master to send the rest of command and 9
         // for slave to respond) to SCL line and wait for SDA come high.
         for (i=18; i--;)
@@ -267,7 +267,7 @@ bool twi_master_init(void)
     NRF_TWI1->EVENTS_TXDSENT  = 0;
     NRF_TWI1->PSELSCL         = TWI_MASTER_CONFIG_CLOCK_PIN_NUMBER;
     NRF_TWI1->PSELSDA         = TWI_MASTER_CONFIG_DATA_PIN_NUMBER;
-    NRF_TWI1->FREQUENCY       = TWI_FREQUENCY_FREQUENCY_K100 << TWI_FREQUENCY_FREQUENCY_Pos;
+    NRF_TWI1->FREQUENCY       = TWI_FREQUENCY_FREQUENCY_K400 << TWI_FREQUENCY_FREQUENCY_Pos;
     NRF_PPI->CH[0].EEP        = (uint32_t)&NRF_TWI1->EVENTS_BB;
     NRF_PPI->CH[0].TEP        = (uint32_t)&NRF_TWI1->TASKS_SUSPEND;
     NRF_PPI->CHENCLR          = PPI_CHENCLR_CH0_Msk;
@@ -285,6 +285,8 @@ bool twi_master_transfer(uint8_t   address,
                          bool      issue_stop_condition)
 {
     bool transfer_succeeded = false;
+    //SEGGER_RTT_printf(0, "Bus Why?: %d\r\n", twi_master_clear_bus());
+    //SEGGER_RTT_printf(0, "Data Why?: %d\r\n", data_length);
     if (data_length > 0 && twi_master_clear_bus())
     {
         NRF_TWI1->ADDRESS = (address >> 1);
@@ -298,6 +300,7 @@ bool twi_master_transfer(uint8_t   address,
             transfer_succeeded = twi_master_write(data, data_length, issue_stop_condition);
         }
     }
+    //SEGGER_RTT_printf(0, "Work: %d\r\n", transfer_succeeded);
     return transfer_succeeded;
 }
 

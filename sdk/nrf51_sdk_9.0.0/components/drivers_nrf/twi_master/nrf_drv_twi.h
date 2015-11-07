@@ -59,7 +59,7 @@ typedef struct
     uint8_t            instance_id; /**< Instance index. */
 } nrf_drv_twi_t;
 
-
+//#define TWI0_INSTANCE_INDEX      0
 /**@brief Macro for creating a TWI driver instance.*/
 #define NRF_DRV_TWI_INSTANCE(id)                                                      \
         {                                                                             \
