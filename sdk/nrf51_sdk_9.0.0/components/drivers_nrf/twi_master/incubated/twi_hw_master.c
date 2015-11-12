@@ -17,7 +17,7 @@
 #include "nrf.h"
 #include "nrf_delay.h"
 #include "nrf_gpio.h"
- #include "SEGGER_RTT.h"
+//#include "SEGGER_RTT.h"
 
 /* Max cycles approximately to wait on RXDREADY and TXDREADY event,
  * This is optimized way instead of using timers, this is not power aware. */
