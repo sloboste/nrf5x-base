@@ -49,7 +49,7 @@ static bool twi_master_clock_byte(uint_fast8_t databyte);
 static bool twi_master_clock_byte_in(uint8_t * databyte, bool ack);
 static bool twi_master_wait_while_scl_low(void);
 
-bool twi_master_init(void)
+bool twi_master_sw_init(void)
 {
     // Configure both pins to output Standard 0, No-drive (open-drain) 1
     TWI_SDA_STANDARD0_NODRIVE1(); /*lint !e416 "Creation of out of bounds pointer" */
@@ -66,7 +66,7 @@ bool twi_master_init(void)
     return twi_master_clear_bus();
 }
 
-bool twi_master_transfer(uint8_t address, uint8_t * data, uint8_t data_length, bool issue_stop_condition)
+bool twi_master_sw_transfer(uint8_t address, uint8_t * data, uint8_t data_length, bool issue_stop_condition)
 {
     bool transfer_succeeded = true;
 
